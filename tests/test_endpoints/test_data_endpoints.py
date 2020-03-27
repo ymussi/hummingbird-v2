@@ -1,7 +1,8 @@
 import json
 from unittest import TestCase
 from app import app, db
-from models import City, CasesLocation, State, StateCases
+from models import State
+from models import StateCases
 from tests.runner import clear_db
 
 
@@ -26,8 +27,7 @@ class TestDataApi(TestCase):
     def tearDown(self):
         clear_db(self.db)
 
-    def test_return_all_cases(self):
-        # Seed test data
+    def test_return_all_state_cases_cases(self):
         State().save(self.db.session, abbreviation='SP', name='São Paulo',
                      lat=12.0001, lng=25.0001)
         State().save(self.db.session, abbreviation='MG', name='Minas Gerais',
@@ -39,45 +39,31 @@ class TestDataApi(TestCase):
                           totalcasesms=3, notconfirmedbyms=2,
                           deaths=8, url='https://some_url.com.br')
         self.db.session.commit()
+
         resp = self.client.get(
-            '/data_api/v1/data/all',
+            '/data_api/v1/data/state/cases/all',
             headers={
                 'Authorization': f"Bearer {self.authentication['access_token']}"
             }
         )
-        data = json.loads(resp.get_data(as_text=True))
-
-
-        self.assertEqual(data, {
-            'totalCases': '6',
-            'totalCasesMS': '4',
-            'deaths': '8'
-        })
-
-    def test_return_cases_by_search_city(self):
-        # Seed test data
-        State().save(self.db.session, abbreviation='SP', name='São Paulo',
-                     lat=12.0001, lng=25.0001)
-        City().save(
-            self.db.session, id=1, city="c1", state_id=1,
-            country="c1", totalcases=20)
-        City().save(
-            self.db.session, id=2, city="c2", state_id=2,
-            country="c1", totalcases=20)
-        self.db.session.commit()
-
-        resp = self.client.get(
-            '/data_api/v1/data/search/c1',
-            headers={
-                'Authorization': f"Bearer {self.authentication['access_token']}"
+        response = json.loads(resp.get_data(as_text=True))
+        self.assertEqual(len(response), 2)
+        self.assertEqual(response, [{
+            "stateCode": "SP",
+            "stateName": "São Paulo",
+            "lat": "12.0001",
+            "lng": "25.0001",
+            "cases": {
+                "totalCases": 1,
+                "deaths": 0
             }
-        )
-        data = json.loads(resp.get_data())
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data, [{
-            'city': 'c1',
-            'state': 'São Paulo',
-            'cases': {
-                'totalCases': 20,
+        }, {
+            "stateCode": "MG",
+            "stateName": "Minas Gerais",
+            "lat": "13.0001",
+            "lng": "26.0001",
+            "cases": {
+                "totalCases": 5,
+                "deaths": 8
             }
         }])
