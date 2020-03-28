@@ -1,5 +1,5 @@
 from flask_seeder import Seeder, Faker, generator
-from models import StatesPerDay
+from models import StateCasesPerDay
 from seeds.custom_generators import StateGeneratorRandom
 from seeds.custom_generators import DateGenerator
 
@@ -10,12 +10,12 @@ class StatePerDaySeeder(Seeder):
         _id = generator.Sequence()
 
         faker_for_state = Faker(
-            cls=StatesPerDay,
+            cls=StateCasesPerDay,
             init={
                 'id': _id,
                 'date': DateGenerator('-15d', 'now'),
                 'country': 'Brazil',
-                'state': StateGeneratorRandom(),
+                'state_id': StateGeneratorRandom(),
                 'newcases': generator.Integer(start=0, end=12),
                 'totalcases': generator.Integer(start=10, end=20)
 
@@ -23,12 +23,12 @@ class StatePerDaySeeder(Seeder):
         )
 
         faker_for_total = Faker(
-            cls=StatesPerDay,
+            cls=StateCasesPerDay,
             init={
                 'id': _id,
                 'date': DateGenerator('-15d', 'now'),
                 'country': 'Brazil',
-                'state': 'TOTAL',
+                'state_id': 'TOTAL',
                 'newcases': generator.Integer(start=0, end=12),
                 'totalcases': generator.Integer(start=10, end=20)
 
